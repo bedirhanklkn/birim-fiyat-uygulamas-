@@ -44,7 +44,7 @@ export default function AdminPage() {
     e.preventDefault();
     // In a real app, this should be a secure backend check.
     // For MVP, simple client-side check.
-    if (password === 'admin123') {
+    if (password === 'mevkan1221') {
       setIsAuthenticated(true);
     } else {
       setStatus({ type: 'error', message: 'Hatalı şifre' });
