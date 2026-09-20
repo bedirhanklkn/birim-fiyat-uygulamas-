@@ -42,9 +42,9 @@ export default function AdminPage() {
 
   const handleLogin = (e) => {
     e.preventDefault();
-    // In a real app, this should be a secure backend check.
-    // For MVP, simple client-side check.
-    if (password === 'mevkan1221') {
+    // Güvenlik için şifreyi artık .env dosyasından çekiyoruz, GitHub'da gözükmeyecek.
+    const gercekSifre = process.env.NEXT_PUBLIC_ADMIN_PASSWORD;
+    if (password === gercekSifre) {
       setIsAuthenticated(true);
     } else {
       setStatus({ type: 'error', message: 'Hatalı şifre' });
