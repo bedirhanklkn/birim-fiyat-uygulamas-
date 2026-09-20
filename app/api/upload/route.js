@@ -124,17 +124,26 @@ export async function POST(request) {
     }
     const deduplicatedData = Array.from(uniqueDataMap.values());
 
-    // Supabase'e Kaydetme
-    const { data: insertedData, error } = await supabase
-      .from('unit_prices')
-      .upsert(deduplicatedData, { onConflict: 'poz_no,yil,ay,tip,birim' });
+    // Supabase'e Kaydetme (Vercel ve Supabase sınırlarına takılmamak için 1000'erli paketler halinde yüklüyoruz)
+    const chunkSize = 1000;
+    let totalInserted = 0;
 
-    if (error) {
-      console.error('Supabase error:', error);
-      return NextResponse.json({ error: 'Veritabanına kaydedilirken hata oluştu: ' + error.message }, { status: 500 });
+    for (let i = 0; i < deduplicatedData.length; i += chunkSize) {
+      const chunk = deduplicatedData.slice(i, i + chunkSize);
+      
+      const { error } = await supabase
+        .from('unit_prices')
+        .upsert(chunk, { onConflict: 'poz_no,yil,ay,tip,birim' });
+
+      if (error) {
+        console.error('Supabase error on chunk:', error);
+        return NextResponse.json({ error: 'Veritabanına kaydedilirken hata oluştu: ' + error.message }, { status: 500 });
+      }
+      
+      totalInserted += chunk.length;
     }
 
-    return NextResponse.json({ success: true, insertedCount: formattedData.length });
+    return NextResponse.json({ success: true, insertedCount: totalInserted });
     
   } catch (error) {
     console.error('API Error:', error);
