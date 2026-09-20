@@ -1,5 +1,9 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
+
+// Vercel ücretsiz paketindeki 10 saniyelik zaman aşımı sınırını maksimum süreye (60 saniye) uzatırız
+export const maxDuration = 60;
+
 import * as xlsx from 'xlsx';
 if (typeof global.DOMMatrix === 'undefined') {
   global.DOMMatrix = class DOMMatrix {};
