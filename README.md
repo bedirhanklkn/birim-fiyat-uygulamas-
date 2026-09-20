@@ -1,36 +1,46 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# İnşaat Birim Fiyat ve Rayiç Arama Motoru 🏗️
 
-## Getting Started
+Bu proje, inşaat mühendisleri, mimarlar ve hak ediş uzmanları için geliştirilmiş; Türkiye'deki resmi kurumların (Çevre ve Şehircilik Bakanlığı, Karayolları, DSİ vb.) **Birim Fiyat** ve **Rayiç** listelerini saniyeler içinde filtreleyip bulmanızı sağlayan modern bir web uygulamasıdır.
 
-First, run the development server:
+## 🌟 Öne Çıkan Özellikler
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+* **⚡ Anında Arama:** On binlerce poz ve rayiç arasından numara (Örn: `15.100.1001`) veya kelime (Örn: `Demir`) ile saniyeler içinde arama yapabilirsiniz.
+* **🔍 Gelişmiş Filtreleme:** Arama sonuçlarınızı **Kurum, Yıl, Ay ve Kayıt Tipi (Poz / Rayiç)** bazında daraltabilirsiniz.
+* **📂 Excel'den Toplu Yükleme:** Şifreli yönetici (Admin) paneli üzerinden, kurumların yayınladığı Excel dosyalarını tek tıkla sisteme aktarabilirsiniz (Tek seferde ~20.000 satır).
+* **🛡️ Akıllı Veri Koruma:** Excel'den yüklenen bozuk satırları, ara başlıkları ve boş fiyatları otomatik atlar. Aynı pozun farklı birimlerini (Ton, m3) ayırt eder ve mükerrer kayıt (çiftleme) yaratmadan akıllıca günceller (Upsert).
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🛠️ Kullanılan Teknolojiler
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+* **Frontend:** Next.js (App Router), React
+* **Backend & Veritabanı:** Supabase (PostgreSQL)
+* **Tasarım:** Vanilla CSS (Modern, duyarlı (responsive) ve şık kullanıcı arayüzü)
+* **Veri İşleme:** xlsx (Excel ve veri ayrıştırma)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 🚀 Kurulum ve Çalıştırma
 
-## Learn More
+Projeyi kendi bilgisayarınızda çalıştırmak için aşağıdaki adımları izleyin:
 
-To learn more about Next.js, take a look at the following resources:
+1. **Bağımlılıkları Yükleyin:**
+   ```bash
+   npm install
+   ```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+2. **Çevre Değişkenlerini Ayarlayın:**
+   Proje ana dizininde `.env.local` adında bir dosya oluşturun ve içine Supabase bilgilerinizi ekleyin:
+   ```env
+   NEXT_PUBLIC_SUPABASE_URL=sizin_supabase_url_adresiniz
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=sizin_supabase_anon_key_adresiniz
+   ```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+3. **Geliştirici Sunucusunu Başlatın:**
+   ```bash
+   npm run dev
+   ```
 
-## Deploy on Vercel
+4. Tarayıcınızdan [http://localhost:3000](http://localhost:3000) adresine giderek uygulamayı kullanmaya başlayabilirsiniz!
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 🔐 Yönetici (Admin) Paneli Kullanımı
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Toplu Excel yüklemeleri yapmak için `http://localhost:3000/admin` adresine gidip şifrenizle giriş yapabilirsiniz.
+> Yükleyeceğiniz Excel dosyalarında sütun sıralamasının tam olarak şu şekilde (A,B,C,D) olduğuna emin olun:
+> `1. Poz No` | `2. Tanım` | `3. Birim` | `4. Fiyat`
