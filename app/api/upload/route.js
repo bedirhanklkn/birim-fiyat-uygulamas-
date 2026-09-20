@@ -124,8 +124,8 @@ export async function POST(request) {
     }
     const deduplicatedData = Array.from(uniqueDataMap.values());
 
-    // Supabase'e Kaydetme (Vercel ve Supabase sınırlarına takılmamak için 1000'erli paketler halinde yüklüyoruz)
-    const chunkSize = 1000;
+    // Supabase'e Kaydetme (Vercel ve Supabase sınırlarına takılmamak için 6000'erli paketler halinde yüklüyoruz)
+    const chunkSize = 6000;
     let totalInserted = 0;
 
     for (let i = 0; i < deduplicatedData.length; i += chunkSize) {
