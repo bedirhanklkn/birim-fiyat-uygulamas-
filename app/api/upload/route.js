@@ -1,17 +1,48 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { createClient } from '@supabase/supabase-js';
+import * as xlsx from 'xlsx';
 
-// Vercel ücretsiz paketindeki 10 saniyelik zaman aşımı sınırını maksimum süreye (60 saniye) uzatırız
+// Vercel ücretsiz paketindeki zaman aşımı sınırını maksimuma (60 saniye) uzatırız
 export const maxDuration = 60;
 
-import * as xlsx from 'xlsx';
-if (typeof global.DOMMatrix === 'undefined') {
-  global.DOMMatrix = class DOMMatrix {};
+// Sunucu tarafı için ayrı bir Supabase client oluşturuyoruz
+function getSupabase() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  
+  if (!url || !key) {
+    throw new Error('Supabase bağlantı bilgileri eksik. Lütfen Environment Variables ayarlarını kontrol edin.');
+  }
+  
+  return createClient(url, key);
 }
-const pdf = require('pdf-parse');
+
+// Tek bir chunk'ı yeniden deneme mekanizmasıyla Supabase'e gönderir
+async function upsertWithRetry(supabase, chunk, retries = 3) {
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      const { error } = await supabase
+        .from('unit_prices')
+        .upsert(chunk, { onConflict: 'poz_no,yil,ay,tip,birim' });
+
+      if (error) {
+        throw error;
+      }
+      return; // Başarılı, fonksiyondan çık
+    } catch (err) {
+      if (attempt === retries) {
+        throw err; // Son deneme de başarısız olduysa hatayı fırlat
+      }
+      // Bir sonraki denemeden önce kısa bir süre bekle (500ms, 1000ms, 1500ms...)
+      await new Promise(resolve => setTimeout(resolve, attempt * 500));
+    }
+  }
+}
 
 export async function POST(request) {
   try {
+    const supabase = getSupabase();
+    
     const formData = await request.formData();
     const file = formData.get('file');
     
@@ -31,18 +62,20 @@ export async function POST(request) {
     let formattedData = [];
 
     if (file.name.toLowerCase().endsWith('.pdf')) {
+      // PDF desteği
+      if (typeof global.DOMMatrix === 'undefined') {
+        global.DOMMatrix = class DOMMatrix {};
+      }
+      const pdf = require('pdf-parse');
       const data = await pdf(buffer);
       const text = data.text;
       
-      // PDF'ten satırları ayıklama
       const lines = text.split('\n');
       for (const line of lines) {
-        // Basit bir regex: Satır başında bir poz numarası (örn: 15.100.1001 veya 15.100), ardından tanım, birim ve son olarak fiyat
-        // Örnek: "15.100.1001   C25 Hazır Beton   M3   2500,50"
         const regex = /^([\d\.-]+)\s+(.+?)\s+([A-Za-z0-9\.]+)\s+([\d\.,]+)$/;
         const match = line.trim().match(regex);
         if (match) {
-          let fiyatStr = match[4].replace(/\./g, '').replace(',', '.'); // 2.500,50 -> 2500.50
+          let fiyatStr = match[4].replace(/\./g, '').replace(',', '.');
           formattedData.push({
             poz_no: match[1].trim(),
             tanim: match[2].trim(),
@@ -67,16 +100,12 @@ export async function POST(request) {
       const sheet = workbook.Sheets[sheetName];
       
       // header: 1 ile veriyi dizi içinde diziler (array of arrays) olarak okuyoruz.
-      // Bu sayede başlık isimlerine (örn: "TÜİK Endeksleriyle...") bağımlı kalmıyoruz.
       const rawData = xlsx.utils.sheet_to_json(sheet, { header: 1 });
 
       if (!rawData || rawData.length === 0) {
         return NextResponse.json({ error: 'Excel dosyası boş veya okunamadı.' }, { status: 400 });
       }
 
-      // İlk satır muhtemelen "2026 EYLÜL AYI GÜNCEL BİRİM FİYAT LİSTESİ" gibi bir başlık.
-      // İkinci satır ise "Poz No", "Tanım", vb. kolon isimleri.
-      // Verilerin başladığı satırı bulalım (ilk hücresi nokta içeren sayı olan satır)
       for (let i = 0; i < rawData.length; i++) {
         const row = rawData[i];
         if (!row || row.length < 4) continue;
@@ -84,9 +113,8 @@ export async function POST(request) {
         const pozNo = String(row[0] || '').trim();
         const tanim = String(row[1] || '').trim();
         const birim = String(row[2] || '').trim();
-        let fiyatStr = String(row[3] || '0').trim();
         
-        // Eğer bu satır başlık satırıysa (örn: "Poz No" yazıyorsa) atla
+        // Eğer bu satır başlık satırıysa atla
         if (pozNo.toLowerCase().includes('poz no')) continue;
         
         // Eğer poz no boşsa atla
@@ -119,7 +147,7 @@ export async function POST(request) {
         return NextResponse.json({ error: 'İşlenecek geçerli satır bulunamadı.' }, { status: 400 });
     }
 
-    // Excel içinde aynı poz numarası (FARKLI BİRİMLER HARİÇ) birden fazla kez yazılmışsa hata vermemesi için
+    // Excel içinde aynı poz numarası birden fazla kez yazılmışsa hata vermemesi için
     // verileri eşsiz hale getiriyoruz. (poz_no, yil, ay, tip, birim kombinasyonu eşsiz olmalı)
     const uniqueDataMap = new Map();
     for (const item of formattedData) {
@@ -128,23 +156,22 @@ export async function POST(request) {
     }
     const deduplicatedData = Array.from(uniqueDataMap.values());
 
-    // Supabase'e Kaydetme (Vercel ve Supabase sınırlarına takılmamak için 500'erli paketler halinde yüklüyoruz)
-    const chunkSize = 500;
+    // Supabase'e Kaydetme - 200'erli küçük paketler halinde, her pakette hata olursa 3 kez yeniden dener
+    const chunkSize = 200;
     let totalInserted = 0;
 
     for (let i = 0; i < deduplicatedData.length; i += chunkSize) {
       const chunk = deduplicatedData.slice(i, i + chunkSize);
       
-      const { error } = await supabase
-        .from('unit_prices')
-        .upsert(chunk, { onConflict: 'poz_no,yil,ay,tip,birim' });
-
-      if (error) {
-        console.error('Supabase error on chunk:', error);
-        return NextResponse.json({ error: 'Veritabanına kaydedilirken hata oluştu: ' + error.message }, { status: 500 });
+      try {
+        await upsertWithRetry(supabase, chunk, 3);
+        totalInserted += chunk.length;
+      } catch (err) {
+        console.error(`Chunk ${i / chunkSize + 1} hatası:`, err);
+        return NextResponse.json({ 
+          error: `Veritabanına kaydedilirken hata oluştu (${totalInserted}/${deduplicatedData.length} kayıt yüklendi): ${err.message}` 
+        }, { status: 500 });
       }
-      
-      totalInserted += chunk.length;
     }
 
     return NextResponse.json({ success: true, insertedCount: totalInserted });
