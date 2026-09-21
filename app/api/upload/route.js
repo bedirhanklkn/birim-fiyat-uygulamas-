@@ -165,11 +165,23 @@ export async function POST(request) {
       return NextResponse.json({ error: 'İşlenecek geçerli satır bulunamadı.' }, { status: 400 });
     }
 
-    // Tekrarlanan satırları temizle
+    // Tekrarlanan satırları ele al: aynı poz_no+birim varsa sonuna /1, /2 ekle
     const uniqueDataMap = new Map();
     for (const item of formattedData) {
       const uniqueKey = `${item.poz_no}_${item.yil}_${item.ay}_${item.tip}_${item.birim}`;
-      uniqueDataMap.set(uniqueKey, item);
+      if (uniqueDataMap.has(uniqueKey)) {
+        // Bu kombinasyon zaten var, poz_no'nun sonuna numara ekle
+        let counter = 2;
+        let newKey = `${item.poz_no}/${counter}_${item.yil}_${item.ay}_${item.tip}_${item.birim}`;
+        while (uniqueDataMap.has(newKey)) {
+          counter++;
+          newKey = `${item.poz_no}/${counter}_${item.yil}_${item.ay}_${item.tip}_${item.birim}`;
+        }
+        item.poz_no = `${item.poz_no}/${counter}`;
+        uniqueDataMap.set(newKey, item);
+      } else {
+        uniqueDataMap.set(uniqueKey, item);
+      }
     }
     const deduplicatedData = Array.from(uniqueDataMap.values());
 
