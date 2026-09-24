@@ -1,13 +1,13 @@
-# İnşaat Birim Fiyat ve Rayiç Arama Motoru 🏗️
+# İnşaat Birim Fiyat ve Rayiç Arama Motoru 
 
 Bu proje, inşaat mühendisleri, mimarlar ve hak ediş uzmanları için geliştirilmiş; Türkiye'deki resmi kurumların (Çevre ve Şehircilik Bakanlığı, Karayolları, DSİ vb.) **Birim Fiyat** ve **Rayiç** listelerini saniyeler içinde filtreleyip bulmanızı sağlayan modern bir web uygulamasıdır.
 
-## 🌟 Öne Çıkan Özellikler
+##  Öne Çıkan Özellikler
 
-* **⚡ Anında Arama:** On binlerce poz ve rayiç arasından numara (Örn: `15.100.1001`) veya kelime (Örn: `Demir`) ile saniyeler içinde arama yapabilirsiniz.
-* **🔍 Gelişmiş Filtreleme:** Arama sonuçlarınızı **Kurum, Yıl, Ay ve Kayıt Tipi (Poz / Rayiç)** bazında daraltabilirsiniz.
-* **📂 Excel'den Toplu Yükleme:** Şifreli yönetici (Admin) paneli üzerinden, kurumların yayınladığı Excel dosyalarını tek tıkla sisteme aktarabilirsiniz (Tek seferde ~20.000 satır).
-* **🛡️ Akıllı Veri Koruma:** Excel'den yüklenen bozuk satırları, ara başlıkları ve boş fiyatları otomatik atlar. Aynı pozun farklı birimlerini (Ton, m3) ayırt eder ve mükerrer kayıt (çiftleme) yaratmadan akıllıca günceller (Upsert).
+* ** Anında Arama:** On binlerce poz ve rayiç arasından numara (Örn: `15.100.1001`) veya kelime (Örn: `Demir`) ile saniyeler içinde arama yapabilirsiniz.
+* ** Gelişmiş Filtreleme:** Arama sonuçlarınızı **Kurum, Yıl, Ay ve Kayıt Tipi (Poz / Rayiç)** bazında daraltabilirsiniz.
+* ** Excel'den Toplu Yükleme:** Şifreli yönetici (Admin) paneli üzerinden, kurumların yayınladığı Excel dosyalarını tek tıkla sisteme aktarabilirsiniz (Tek seferde ~20.000 satır).
+* ** Akıllı Veri Koruma:** Excel'den yüklenen bozuk satırları, ara başlıkları ve boş fiyatları otomatik atlar. Aynı pozun farklı birimlerini (Ton, m3) ayırt eder ve mükerrer kayıt (çiftleme) yaratmadan akıllıca günceller (Upsert).
 
 ## 🛠️ Kullanılan Teknolojiler
 
@@ -16,7 +16,7 @@ Bu proje, inşaat mühendisleri, mimarlar ve hak ediş uzmanları için gelişti
 * **Tasarım:** Vanilla CSS (Modern, duyarlı (responsive) ve şık kullanıcı arayüzü)
 * **Veri İşleme:** xlsx (Excel ve veri ayrıştırma)
 
-## 🚀 Kurulum ve Çalıştırma
+##  Kurulum ve Çalıştırma
 
 Projeyi kendi bilgisayarınızda çalıştırmak için aşağıdaki adımları izleyin:
 
@@ -39,7 +39,7 @@ Projeyi kendi bilgisayarınızda çalıştırmak için aşağıdaki adımları i
 
 4. Tarayıcınızdan [http://localhost:3000](http://localhost:3000) adresine giderek uygulamayı kullanmaya başlayabilirsiniz!
 
-## 🔐 Yönetici (Admin) Paneli Kullanımı
+##  Yönetici (Admin) Paneli Kullanımı
 
 Toplu Excel yüklemeleri yapmak için `http://localhost:3000/admin` adresine gidip şifrenizle giriş yapabilirsiniz.
 > Yükleyeceğiniz Excel dosyalarında sütun sıralamasının tam olarak şu şekilde (A,B,C,D) olduğuna emin olun:
