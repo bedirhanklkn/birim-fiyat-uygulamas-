@@ -16,6 +16,10 @@
   --color-gold-gradient: linear-gradient(135deg, #C9A84C 0%, #E8D48B 50%, #C9A84C 100%);
   --color-dark-gradient: linear-gradient(180deg, #0c0c0f 0%, #161620 100%);
 
+  /* Transitions */
+  --transition-fast: 150ms ease-in-out;
+  --transition-normal: 250ms ease-in-out;
+  
   /* Typography */
   --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   --font-size-sm: 0.875rem;
@@ -46,10 +50,18 @@
   --shadow-md: 0 4px 12px -1px rgb(0 0 0 / 0.4), 0 2px 4px -2px rgb(0 0 0 / 0.2);
   --shadow-lg: 0 10px 25px -3px rgb(0 0 0 / 0.5), 0 4px 10px -4px rgb(0 0 0 / 0.3);
   --shadow-gold: 0 4px 20px -4px rgba(201, 168, 76, 0.25);
-  
-  /* Transitions */
-  --transition-fast: 150ms ease-in-out;
-  --transition-normal: 250ms ease-in-out;
+}
+
+body.light-theme {
+  --color-secondary: #ffffff;
+  --color-background: #f8fafc;
+  --color-surface: #ffffff;
+  --color-surface-hover: #f1f5f9;
+  --color-text: #0f172a;
+  --color-text-muted: #475569;
+  --color-border: #e2e8f0;
+  --color-border-gold: rgba(201, 168, 76, 0.4);
+  --color-dark-gradient: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
 }
 
 * {
@@ -246,23 +258,53 @@ button, input, select {
   color: var(--color-primary);
 }
 
-/* Header */
-.app-header {
-  border-bottom: 1px solid var(--color-border);
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  background-color: rgba(12, 12, 15, 0.85);
+/* App Layout System */
+.app-wrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+  background-color: var(--color-background);
 }
 
-.header-container {
+.app-header {
+  height: 64px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 4rem;
+  padding: 0 var(--space-4);
+  background-color: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+  flex-shrink: 0;
+  z-index: 20;
 }
+
+.app-body {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+.app-sidebar {
+  width: 320px;
+  background-color: var(--color-surface);
+  border-right: 1px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  overflow-y: auto;
+  z-index: 10;
+}
+
+.app-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-6);
+  background-color: var(--color-background);
+  position: relative;
+}
+
+/* Header Specifics */
 
 .logo {
   font-size: var(--font-size-xl);
@@ -309,4 +351,80 @@ button, input, select {
 
 .animate-spin {
   animation: spin 1s linear infinite;
+}
+
+/* Utilities for Sidebar Checklist */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 10px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.4);
+}
+
+.hover-text-primary:hover span {
+  color: var(--color-primary) !important;
+}
+
+/* Mobil Uyumluluk */
+@media (max-width: 768px) {
+  .app-header {
+    flex-wrap: wrap !important;
+    height: auto !important;
+    padding: 12px 12px !important;
+    gap: 12px !important;
+  }
+  
+  .app-header > div:nth-child(1) {
+    flex-wrap: wrap !important;
+    gap: 12px !important;
+    width: 100% !important;
+    flex: none !important;
+  }
+
+  .app-header > div:nth-child(1) form {
+    width: 100% !important;
+    max-width: 100% !important;
+    flex: none !important;
+    margin-top: 4px;
+  }
+
+  .app-header > div:nth-child(2) {
+    width: 100% !important;
+    justify-content: space-between !important;
+    margin-top: 4px;
+  }
+  
+  .app-header .logo {
+    margin-right: auto;
+  }
+
+  .app-content {
+    padding: 16px !important;
+  }
+
+  .card {
+    padding: 16px !important;
+  }
+
+  .table-container {
+    overflow-x: auto !important;
+  }
+
+  .sidebar-backdrop {
+    display: block;
+  }
+}
+
+@media (min-width: 769px) {
+  .sidebar-backdrop {
+    display: none !important;
+  }
 }
